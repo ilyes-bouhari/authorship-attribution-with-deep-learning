@@ -1,3 +1,5 @@
+import os
+
 def load_glove_embeddings(path, embedding_dim):
 
   path_to_glove_file = os.path.join(
