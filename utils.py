@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 def load_glove_embeddings(path, embedding_dim):
 
