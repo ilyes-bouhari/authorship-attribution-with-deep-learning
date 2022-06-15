@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from keras.layers import Embedding
+from keras.layers import Embedding, Conv1D, MaxPooling1D, Flatten
 
 def load_glove_embeddings(path, embedding_dim):
 
@@ -46,3 +46,28 @@ def get_embeddings_layer(embeddings_matrix, name, max_len, trainable=False):
     )
         
     return embedding_layer
+
+def get_conv_pool(x_input, max_len, suffix, n_grams=[3, 4, 5], feature_maps=100):
+    
+    branches = []
+    for n in n_grams:
+
+        branch = Conv1D(
+            filters=feature_maps, 
+            kernel_size=n, 
+            activation='relu',
+            name='Conv_' + suffix + '_' + str(n)
+        )(x_input)
+
+        branch = MaxPooling1D(
+            pool_size=max_len - n + 1, 
+            strides=None, 
+            padding='valid',
+            name='MaxPooling_' + suffix + '_' + str(n)
+        )(branch)
+        
+        branch = Flatten(name='Flatten_' + suffix + '_' + str(n))(branch)
+
+        branches.append(branch)
+
+    return branches
