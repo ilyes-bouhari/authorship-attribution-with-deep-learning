@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import tensorflorw as tf
+import tensorflow as tf
 from keras.layers import Embedding, Conv1D, MaxPooling1D, Flatten
 
 def normlize(text):
