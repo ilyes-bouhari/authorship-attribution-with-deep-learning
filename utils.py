@@ -168,3 +168,8 @@ def get_text_vectorizer(max_features, output_mode, raw_train_ds, sequence_length
         vectorizer.set_weights(from_disk["weights"])
 
     return vectorizer
+
+
+def vectorize_text(text, label, vectorizer):
+    text = tf.expand_dims(text, -1)
+    return vectorizer(text), label
