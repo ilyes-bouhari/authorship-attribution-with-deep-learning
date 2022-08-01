@@ -7,6 +7,7 @@ def normlize(text):
 
     import re
     import string
+    import nltk
     import contractions
     nltk.download('stopwords')
     from nltk.corpus import stopwords
