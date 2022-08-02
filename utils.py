@@ -54,9 +54,17 @@ def load_glove_embeddings(path, embedding_dim):
 
 def create_embeddings_matrix(embeddings_index, vocabulary, embedding_dim=100):
 
-    embeddings_matrix = np.random.rand(len(vocabulary) + 1, embedding_dim)
+    embeddings_matrix = np.random.rand(
+        len(vocabulary) + 1, embeddings_index.vector_size
+    )
+
     for i, word in enumerate(vocabulary):
-        embedding_vector = embeddings_index.get(word)
+
+        try:
+            embedding_vector = embeddings_index.get_vector(word)
+        except:
+            embedding_vector = None
+
         if embedding_vector is not None:
             embeddings_matrix[i] = embedding_vector
 
