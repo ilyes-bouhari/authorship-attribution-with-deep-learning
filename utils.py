@@ -207,3 +207,8 @@ def load_file(filename):
         data = pickle.load(f)
 
     return data
+
+
+def create_words_index(vectorizer):
+    voc = vectorizer.get_vocabulary()
+    return dict(zip(voc, range(len(voc))))
