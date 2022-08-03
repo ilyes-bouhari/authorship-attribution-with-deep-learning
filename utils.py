@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import tensorflow as tf
+import pickle
+import gensim.downloader
 from keras.layers import Embedding, Conv1D, MaxPooling1D, Flatten
 
 
@@ -181,3 +183,27 @@ def get_text_vectorizer(max_features, output_mode, raw_train_ds, sequence_length
 def vectorize_text(text, label, vectorizer):
     text = tf.expand_dims(text, -1)
     return vectorizer(text), label
+
+
+def load_pre_trained_embeddings():
+
+    pre_trained_embeddings = {
+        # 'word2vec-google-news-300': 'word2vec_300',
+        "glove-wiki-gigaword-50": "glove_50",
+        # 'glove-wiki-gigaword-100': 'glove_100',
+        # 'glove-wiki-gigaword-200': 'glove_200',
+        # 'glove-wiki-gigaword-300': 'glove_300',
+    }
+
+    for (model, filename) in pre_trained_embeddings.items():
+        pickle.dump(
+            gensim.downloader.load(model),
+            open("{filename}.pkl".format(filename=filename), "wb"),
+        )
+
+
+def load_file(filename):
+    with open(filename, "rb") as f:
+        data = pickle.load(f)
+
+    return data
