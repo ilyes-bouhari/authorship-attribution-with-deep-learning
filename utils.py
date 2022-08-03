@@ -5,16 +5,19 @@ import pickle
 import gensim.downloader
 from keras.layers import Embedding, Conv1D, MaxPooling1D, Flatten
 
+import re
+import string
+import nltk
+import contractions
+
+nltk.download("stopwords")
+from nltk.corpus import stopwords
+
 
 def normlize(text):
 
-    import re
-    import string
-    import nltk
-    import contractions
-
-    nltk.download("stopwords")
-    from nltk.corpus import stopwords
+    # nltk.download("stopwords")
+    # from nltk.corpus import stopwords
 
     result = tf.strings.lower(text)
     result = tf.strings.regex_replace(result, "<[^>]+>", " ")
