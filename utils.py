@@ -188,21 +188,22 @@ def vectorize_text(text, label, vectorizer):
     return vectorizer(text), label
 
 
-def load_pre_trained_embeddings():
+def load_pre_trained_embeddings(exclude=[]):
 
     pre_trained_embeddings = {
-        # "word2vec-google-news-300": "word2vec_300",
+        "word2vec-google-news-300": "word2vec_300",
         "glove-wiki-gigaword-50": "glove_50",
-        # "glove-wiki-gigaword-100": "glove_100",
-        # "glove-wiki-gigaword-200": "glove_200",
-        # "glove-wiki-gigaword-300": "glove_300",
+        "glove-wiki-gigaword-100": "glove_100",
+        "glove-wiki-gigaword-200": "glove_200",
+        "glove-wiki-gigaword-300": "glove_300",
     }
 
     for (model, filename) in pre_trained_embeddings.items():
-        pickle.dump(
-            gensim.downloader.load(model),
-            open("{filename}.pkl".format(filename=filename), "wb"),
-        )
+        if not filename in exclude:
+            pickle.dump(
+                gensim.downloader.load(model),
+                open("{filename}.pkl".format(filename=filename), "wb"),
+            )
 
 
 def load_file(filename):
