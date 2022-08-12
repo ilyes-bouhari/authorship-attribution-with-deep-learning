@@ -26,12 +26,12 @@ def normlize(text):
         result, "https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+", ""
     )
 
-    for index, (key, value) in enumerate(contractions.contractions_dict.items()):
-        result = tf.strings.regex_replace(result, r"\b(" + key + r")\b", value)
+    # for index, (key, value) in enumerate(contractions.contractions_dict.items()):
+    #     result = tf.strings.regex_replace(result, r"\b(" + key + r")\b", value)
 
-    result = tf.strings.regex_replace(
-        result, r"\b(" + r"|".join(stopwords.words("english")) + r")\b\s*", ""
-    )
+    # result = tf.strings.regex_replace(
+    #     result, r"\b(" + r"|".join(stopwords.words("english")) + r")\b\s*", ""
+    # )
     result = tf.strings.regex_replace(result, f"[{re.escape(string.punctuation)}]", "")
 
     return result
