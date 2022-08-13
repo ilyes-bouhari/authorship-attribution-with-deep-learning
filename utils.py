@@ -222,7 +222,7 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
     assert len(headers) > 0
 
     # create csv file & write header
-    with open(f"/content/{csv_filename}", "w", encoding="UTF8", newline="") as f:
+    with open(csv_filename, "w", encoding="UTF8", newline="") as f:
         writer = csv.writer(f)
         h = headers.copy()
         h.insert(0, "trial")
@@ -245,9 +245,7 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
                     hyperparameters = json_file["hyperparameters"]["values"]
                     metrics = json_file["metrics"]["metrics"]
 
-                    with open(
-                        f"/content/{csv_filename}", "a", encoding="UTF8", newline=""
-                    ) as f:
+                    with open(csv_filename, "a", encoding="UTF8", newline="") as f:
                         writer = csv.writer(f)
 
                         data = [dir.split("_")[-1]]
@@ -271,9 +269,9 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
 
                         writer.writerow(data)
 
-    if os.path.exists(f"/content/{csv_filename}"):
-        dataframe = pd.read_csv(f"/content/{csv_filename}")
+    if os.path.exists(csv_filename):
+        dataframe = pd.read_csv(csv_filename)
         dataframe.sort_values(
             ["trial"], axis=0, ascending=True, inplace=True, na_position="first"
         )
-        dataframe.to_csv(f"/content/{csv_filename}", index=False)
+        dataframe.to_csv(csv_filename, index=False)
