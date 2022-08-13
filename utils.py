@@ -1,5 +1,8 @@
 import os
+import csv
+import json
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import pickle
 import gensim.downloader
@@ -216,3 +219,62 @@ def load_file(filename):
 def create_words_index(vectorizer):
     voc = vectorizer.get_vocabulary()
     return dict(zip(voc, range(len(voc))))
+
+
+def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepath):
+
+    assert len(headers) > 0
+
+    # create csv file & write header
+    with open(f"/content/{csv_filename}", "w", encoding="UTF8", newline="") as f:
+        writer = csv.writer(f)
+        h = headers.copy()
+        h.insert(0, "trial")
+        h.extend(
+            ["initial_epoch", "epochs", "loss", "accuracy", "val_loss", "val_accuracy"]
+        )
+
+        writer.writerow(h)
+
+    for root, files in os.walk(keras_results_filepath):
+
+        for filename in files:
+
+            dir = root.split("/")[-1]
+            if dir.split("_")[0] == "trial" and filename == "trial.json":
+                json_file = json.load(open(os.path.join(root, filename)))
+
+                hyperparameters = json_file["hyperparameters"]["values"]
+                metrics = json_file["metrics"]["metrics"]
+
+                with open(
+                    f"/content/{csv_filename}", "a", encoding="UTF8", newline=""
+                ) as f:
+                    writer = csv.writer(f)
+
+                    data = [dir.split("_")[-1]]
+                    for i in header:
+                        data.append(hyperparameters[i])
+
+                    data.extend(
+                        [
+                            hyperparameters["tuner/initial_epoch"],
+                            hyperparameters["tuner/epochs"],
+                            metrics["loss"]["observations"][0]["value"][0],
+                            metrics["sparse_categorical_accuracy"]["observations"][0][
+                                "value"
+                            ][0],
+                            metrics["val_loss"]["observations"][0]["value"][0],
+                            metrics["val_sparse_categorical_accuracy"]["observations"][
+                                0
+                            ]["value"][0],
+                        ]
+                    )
+
+                    writer.writerow(data)
+
+    dataframe = pd.read_csv(f"/content/{csv_filename}")
+    dataframe.sort_values(
+        ["trial"], axis=0, ascending=True, inplace=True, na_position="first"
+    )
+    dataframe.to_csv(f"/content/{csv_filename}", index=False)
