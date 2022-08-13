@@ -307,7 +307,7 @@ def model_plots(history, accuracy_plot_image_name, loss_plot_image_name):
     plt.show()
 
 
-def model_evaluation(raw_test_ds, vectorizer):
+def model_evaluation(model, raw_test_ds, vectorizer):
 
     test_ds = raw_test_ds.map(
         lambda text, label: vectorize_text(text, label, vectorizer)
