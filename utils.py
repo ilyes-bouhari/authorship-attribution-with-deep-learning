@@ -55,8 +55,6 @@ def load_glove_embeddings(path, embedding_dim):
         embeddings_index[word] = coefs
     f.close()
 
-    print("Loaded %s word vectors." % len(embeddings_index))
-
     return embeddings_index
 
 
@@ -75,8 +73,6 @@ def create_embeddings_matrix(embeddings_index, vocabulary, embedding_dim=100):
 
         if embedding_vector is not None:
             embeddings_matrix[i] = embedding_vector
-
-    print("Matrix shape: {}".format(embeddings_matrix.shape))
 
     return embeddings_matrix
 
@@ -244,37 +240,40 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
             if dir.split("_")[0] == "trial" and filename == "trial.json":
                 json_file = json.load(open(os.path.join(root, filename)))
 
-                hyperparameters = json_file["hyperparameters"]["values"]
-                metrics = json_file["metrics"]["metrics"]
+                if json_file["status"] == "COMPLETED":
 
-                with open(
-                    f"/content/{csv_filename}", "a", encoding="UTF8", newline=""
-                ) as f:
-                    writer = csv.writer(f)
+                    hyperparameters = json_file["hyperparameters"]["values"]
+                    metrics = json_file["metrics"]["metrics"]
 
-                    data = [dir.split("_")[-1]]
-                    for i in headers:
-                        data.append(hyperparameters[i])
+                    with open(
+                        f"/content/{csv_filename}", "a", encoding="UTF8", newline=""
+                    ) as f:
+                        writer = csv.writer(f)
 
-                    data.extend(
-                        [
-                            hyperparameters["tuner/initial_epoch"],
-                            hyperparameters["tuner/epochs"],
-                            metrics["loss"]["observations"][0]["value"][0],
-                            metrics["sparse_categorical_accuracy"]["observations"][0][
-                                "value"
-                            ][0],
-                            metrics["val_loss"]["observations"][0]["value"][0],
-                            metrics["val_sparse_categorical_accuracy"]["observations"][
-                                0
-                            ]["value"][0],
-                        ]
-                    )
+                        data = [dir.split("_")[-1]]
+                        for i in headers:
+                            data.append(hyperparameters[i])
 
-                    writer.writerow(data)
+                        data.extend(
+                            [
+                                hyperparameters["tuner/initial_epoch"],
+                                hyperparameters["tuner/epochs"],
+                                metrics["loss"]["observations"][0]["value"][0],
+                                metrics["sparse_categorical_accuracy"]["observations"][
+                                    0
+                                ]["value"][0],
+                                metrics["val_loss"]["observations"][0]["value"][0],
+                                metrics["val_sparse_categorical_accuracy"][
+                                    "observations"
+                                ][0]["value"][0],
+                            ]
+                        )
 
-    dataframe = pd.read_csv(f"/content/{csv_filename}")
-    dataframe.sort_values(
-        ["trial"], axis=0, ascending=True, inplace=True, na_position="first"
-    )
-    dataframe.to_csv(f"/content/{csv_filename}", index=False)
+                        writer.writerow(data)
+
+    if os.path.exists(f"/content/{csv_filename}"):
+        dataframe = pd.read_csv(f"/content/{csv_filename}")
+        dataframe.sort_values(
+            ["trial"], axis=0, ascending=True, inplace=True, na_position="first"
+        )
+        dataframe.to_csv(f"/content/{csv_filename}", index=False)
