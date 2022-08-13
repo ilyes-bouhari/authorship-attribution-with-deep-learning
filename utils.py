@@ -236,7 +236,7 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
 
         writer.writerow(h)
 
-    for root, files in os.walk(keras_results_filepath):
+    for root, dirs, files in os.walk(keras_results_filepath):
 
         for filename in files:
 
