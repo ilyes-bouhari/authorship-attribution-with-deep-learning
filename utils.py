@@ -7,6 +7,7 @@ import tensorflow as tf
 import pickle
 import gensim.downloader
 from keras.layers import Embedding, Conv1D, MaxPooling1D, Flatten
+from matplotlib import pyplot as plt
 
 import re
 import string
@@ -275,3 +276,45 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
             ["trial"], axis=0, ascending=True, inplace=True, na_position="first"
         )
         dataframe.to_csv(csv_filename, index=False)
+
+
+def model_plots(history, accuracy_plot_image_name, loss_plot_image_name):
+
+    plt.plot(
+        history.history["sparse_categorical_accuracy"],
+        color="g",
+        label="Training accuracy",
+    )
+    plt.plot(
+        history.history["val_sparse_categorical_accuracy"],
+        color="b",
+        label="Validation accuracy",
+    )
+    plt.title("Training and Validation accuracy")
+    plt.ylabel("Accuracy")
+    plt.xlabel("Epochs")
+    plt.legend(loc="upper left")
+    plt.savefig(f"{accuracy_plot_image_name}.png")
+    plt.show()
+
+    plt.plot(history.history["loss"], color="g", label="Training loss")
+    plt.plot(history.history["val_loss"], color="b", label="Validation loss")
+    plt.title("Training and Validation loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.legend(loc="upper right")
+    plt.savefig(f"{loss_plot_image_name}.png")
+    plt.show()
+
+
+def model_evaluation(raw_test_ds, vectorizer):
+
+    test_ds = raw_test_ds.map(
+        lambda text, label: vectorize_text(text, label, vectorizer)
+    )
+    test_ds = test_ds.cache().prefetch(buffer_size=10)
+
+    loss, accuracy = model.evaluate(test_ds)
+
+    print(f"Loss: {loss}")
+    print(f"Accuracy: {accuracy}")
