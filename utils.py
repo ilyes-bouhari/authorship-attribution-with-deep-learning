@@ -253,7 +253,7 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
                     writer = csv.writer(f)
 
                     data = [dir.split("_")[-1]]
-                    for i in header:
+                    for i in headers:
                         data.append(hyperparameters[i])
 
                     data.extend(
