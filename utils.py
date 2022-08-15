@@ -226,9 +226,17 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
     with open(csv_filename, "w", encoding="UTF8", newline="") as f:
         writer = csv.writer(f)
         h = headers.copy()
-        h.insert(0, "trial")
+        # h.insert(0, "trial")
         h.extend(
-            ["initial_epoch", "epochs", "loss", "accuracy", "val_loss", "val_accuracy"]
+            [
+                "initial_epoch",
+                "epochs",
+                "loss",
+                "accuracy",
+                "val_loss",
+                "val_accuracy",
+                "trial",
+            ]
         )
 
         writer.writerow(h)
@@ -272,9 +280,13 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
 
     if os.path.exists(csv_filename):
         dataframe = pd.read_csv(csv_filename)
-        dataframe.sort_values(
-            ["trial"], axis=0, ascending=True, inplace=True, na_position="first"
-        )
+        # dataframe.sort_values(
+        #     ["trial"], axis=0, ascending=True, inplace=True, na_position="first"
+        # )
+
+        dataframe = dataframe.groupby(h).count().reset_index()
+        trial = dataframe.pop("trial")
+        dataframe.insert(0, "trial", trial)
         dataframe.to_csv(csv_filename, index=False)
 
 
