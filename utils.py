@@ -257,7 +257,7 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
                     with open(csv_filename, "a", encoding="UTF8", newline="") as f:
                         writer = csv.writer(f)
 
-                        data = [dir.split("_")[-1]]
+                        data = []
                         for i in headers:
                             data.append(hyperparameters[i])
 
@@ -273,6 +273,7 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
                                 metrics["val_sparse_categorical_accuracy"][
                                     "observations"
                                 ][0]["value"][0],
+                                dir.split("_")[-1],
                             ]
                         )
 
