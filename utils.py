@@ -284,6 +284,8 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
         #     ["trial"], axis=0, ascending=True, inplace=True, na_position="first"
         # )
 
+        dataframe.round(decimals=2)
+
         dataframe = dataframe.groupby(h).count().reset_index()
         trial = dataframe.pop("trial")
         dataframe.insert(0, "trial", trial)
