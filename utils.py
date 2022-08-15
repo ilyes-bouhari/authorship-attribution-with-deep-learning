@@ -285,10 +285,15 @@ def save_keras_tuner_results_as_csv(headers, csv_filename, keras_results_filepat
         # )
 
         dataframe.round(decimals=2)
+        dataframe["accuracy"] = (dataframe["accuracy"] * 100).round(1).astype(str) + "%"
+        dataframe["val_accuracy"] = (dataframe["val_accuracy"] * 100).round(1).astype(
+            str
+        ) + "%"
 
         dataframe = dataframe.groupby(h).count().reset_index()
         trial = dataframe.pop("trial")
         dataframe.insert(0, "trial", trial)
+
         dataframe.to_csv(csv_filename, index=False)
 
 
