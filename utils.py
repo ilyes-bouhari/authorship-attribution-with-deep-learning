@@ -127,7 +127,7 @@ def get_dataset_partitions_tf(
     shuffle=True,
     shuffle_size=10000,
 ):
-    assert (train_split + test_split + val_split) == 1
+    # assert (train_split + test_split + val_split) == 1
 
     if shuffle:
         ds = ds.shuffle(shuffle_size, seed=12)
