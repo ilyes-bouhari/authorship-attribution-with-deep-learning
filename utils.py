@@ -326,7 +326,6 @@ def model_plots(history, accuracy_plot_image_name, loss_plot_image_name):
     plt.savefig(f"{loss_plot_image_name}.png")
     plt.show()
 
-
 def model_evaluation(model, raw_test_ds, vectorizer):
 
     test_ds = raw_test_ds.map(
@@ -338,3 +337,23 @@ def model_evaluation(model, raw_test_ds, vectorizer):
 
     print(f"Loss: {loss}")
     print(f"Accuracy: {accuracy}")
+
+def get_dataset_partitions(df, train_split=0.7, val_split=0.1, test_split=0.2):
+
+  assert train_split + val_split + test_split == 1
+
+  df = df.sample(frac=1, random_state=12).reset_index(drop=True)
+
+  df = df.groupby('label')
+
+  arr_list = [np.split(g, [int(train_split * len(g)), int((1 - val_split) * len(g))]) for i, g in df]
+
+  raw_train_df = pd.concat([t[0] for t in arr_list])
+  raw_val_df = pd.concat([t[1] for t in arr_list])
+  raw_test_df = pd.concat([v[2] for v in arr_list])
+
+  raw_train_ds = tf.data.Dataset.from_tensor_slices((raw_train_df['text'], raw_train_df['label']))
+  raw_val_ds = tf.data.Dataset.from_tensor_slices((raw_val_df['text'], raw_val_df['label']))
+  raw_test_ds = tf.data.Dataset.from_tensor_slices((raw_test_df['text'], raw_test_df['label']))
+
+  return raw_train_ds, raw_val_ds, raw_test_ds
