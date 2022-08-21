@@ -368,3 +368,151 @@ def get_dataset_partitions(df, train_split=0.8, val_split=0.1, test_split=0.1):
     )
 
     return raw_train_ds, raw_val_ds, raw_test_ds
+
+
+def recall(y_true, y_pred):
+    y_true = tf.keras.backend.ones_like(y_true)
+    true_positives = tf.keras.backend.sum(
+        tf.keras.backend.round(tf.keras.backend.clip(y_true * y_pred, 0, 1))
+    )
+    all_positives = tf.keras.backend.sum(
+        tf.keras.backend.round(tf.keras.backend.clip(y_true, 0, 1))
+    )
+
+    recall = true_positives / (all_positives + tf.keras.backend.epsilon())
+    return recall
+
+
+def precision(y_true, y_pred):
+    y_true = tf.keras.backend.ones_like(y_true)
+    true_positives = tf.keras.backend.sum(
+        tf.keras.backend.round(tf.keras.backend.clip(y_true * y_pred, 0, 1))
+    )
+
+    predicted_positives = tf.keras.backend.sum(
+        tf.keras.backend.round(tf.keras.backend.clip(y_pred, 0, 1))
+    )
+    precision = true_positives / (predicted_positives + tf.keras.backend.epsilon())
+    return precision
+
+
+def f1_score(y_true, y_pred):
+    precision_m = precision(y_true, y_pred)
+    recall_m = recall(y_true, y_pred)
+    return 2 * (
+        (precision_m * recall_m) / (precision_m + recall_m + tf.keras.backend.epsilon())
+    )
+
+
+def save_keras_tuner_results_as_csv_v2(headers, csv_filename, keras_results_filepath):
+
+    assert len(headers) > 0
+
+    with open(csv_filename, "w", encoding="UTF8", newline="") as f:
+        writer = csv.writer(f)
+        h = headers.copy()
+        h.extend(
+            [
+                "loss",
+                "accuracy",
+                "precision",
+                "recall",
+                "f1_score",
+                "val_loss",
+                "val_accuracy",
+                "val_precision",
+                "val_recall",
+                "val_f1_score",
+            ]
+        )
+
+        writer.writerow(h)
+
+    for root, dirs, files in os.walk(keras_results_filepath):
+
+        for filename in files:
+
+            dir = root.split("/")[-1]
+            if dir.split("_")[0] == "trial" and filename == "trial.json":
+                json_file = json.load(open(os.path.join(root, filename)))
+
+                if json_file["status"] == "COMPLETED":
+
+                    hyperparameters = json_file["hyperparameters"]["values"]
+                    metrics = json_file["metrics"]["metrics"]
+
+                    with open(csv_filename, "a", encoding="UTF8", newline="") as f:
+                        writer = csv.writer(f)
+
+                        data = []
+                        for i in headers:
+                            data.append(hyperparameters[i])
+
+                        data.extend(
+                            [
+                                metrics["loss"]["observations"][0]["value"][0],
+                                metrics["sparse_categorical_accuracy"]["observations"][
+                                    0
+                                ]["value"][0],
+                                metrics["precision"]["observations"][0]["value"][0],
+                                metrics["recall"]["observations"][0]["value"][0],
+                                metrics["f1_score"]["observations"][0]["value"][0],
+                                metrics["val_loss"]["observations"][0]["value"][0],
+                                metrics["val_sparse_categorical_accuracy"][
+                                    "observations"
+                                ][0]["value"][0],
+                                metrics["val_precision"]["observations"][0]["value"][0],
+                                metrics["val_recall"]["observations"][0]["value"][0],
+                                metrics["val_f1_score"]["observations"][0]["value"][0],
+                            ]
+                        )
+
+                        writer.writerow(data)
+
+    if os.path.exists(csv_filename):
+        dataframe = pd.read_csv(csv_filename)
+
+        dataframe.round(decimals=2)
+        dataframe["accuracy"] = (dataframe["accuracy"] * 100).round(1).astype(str) + "%"
+        dataframe["precision"] = (dataframe["precision"] * 100).round(1).astype(
+            str
+        ) + "%"
+        dataframe["recall"] = (dataframe["recall"] * 100).round(1).astype(str) + "%"
+        dataframe["f1_score"] = (dataframe["f1_score"] * 100).round(1).astype(str) + "%"
+
+        dataframe["val_accuracy"] = (dataframe["val_accuracy"] * 100).round(1).astype(
+            str
+        ) + "%"
+        dataframe["val_precision"] = (dataframe["val_precision"] * 100).round(1).astype(
+            str
+        ) + "%"
+        dataframe["val_recall"] = (dataframe["val_recall"] * 100).round(1).astype(
+            str
+        ) + "%"
+        dataframe["val_f1_score"] = (dataframe["val_f1_score"] * 100).round(1).astype(
+            str
+        ) + "%"
+
+        dataframe = dataframe.groupby(h).count().reset_index()
+        dataframe.to_csv(csv_filename, index=False)
+
+
+def model_evaluation_v2(model, raw_test_ds, vectorizer):
+
+    test_ds = raw_test_ds.map(
+        lambda text, label: vectorize_text(text, label, vectorizer)
+    )
+    test_ds = test_ds.cache().prefetch(buffer_size=10)
+
+    loss, accuracy, precision, recall, f1_score = model.evaluate(test_ds)
+
+    accuracy = round(accuracy, 2) * 100
+    precision = round(precision, 2) * 100
+    recall = round(recall, 2) * 100
+    f1_score = round(f1_score, 2) * 100
+
+    print(f"Loss: {loss}")
+    print(f"Accuracy: {accuracy}%")
+    print(f"Precision: {precision}%")
+    print(f"Recall: {recall}%")
+    print(f"f1_score: {f1_score}%")
